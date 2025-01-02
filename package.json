@@ -39,5 +39,50 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "pluginType": "elizaos:plugin:1.0.0",
+  "pluginParameters": {
+      "type": "object",
+      "required": ["slackAppId", "slackClientId", "slackClientSecret", "slackSigningSecret", "slackVerificationToken", "slackBotToken"],
+      "properties": {
+        "slackAppId": {
+          "type": "string",
+          "description": "Slack App ID"
+        },
+        "slackClientId": {
+          "type": "string",
+          "description": "Slack Client ID"
+        },
+        "slackClientSecret": {
+          "type": "string",
+          "description": "Slack Client Secret"
+        },
+        "slackSigningSecret": {
+          "type": "string",
+          "description": "Slack Signing Secret"
+        },
+        "slackVerificationToken": {
+          "type": "string",
+          "description": "Slack Verification Token"
+        },
+        "slackBotToken": {
+          "type": "string",
+          "description": "Slack Bot Token"
+        },
+        "slackServerPort": {
+          "type": "string",
+          "description": "Slack Server Port",
+          "optional": true
+        }
+      }
+    },
+    "pluginEnv": {
+      "SLACK_APP_ID": "slackAppId",
+      "SLACK_CLIENT_ID": "slackClientId",
+      "SLACK_CLIENT_SECRET": "slackClientSecret",
+      "SLACK_SIGNING_SECRET": "slackSigningSecret",
+      "SLACK_VERIFICATION_TOKEN": "slackVerificationToken",
+      "SLACK_BOT_TOKEN": "slackBotToken",
+      "SLACK_SERVER_PORT": "slackServerPort"
+    }
 }
