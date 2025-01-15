@@ -5,7 +5,8 @@
         "rootDir": "src",
         "moduleResolution": "Bundler",
         "allowImportingTsExtensions": true,
-        "allowArbitraryExtensions": true
+        "allowArbitraryExtensions": true,
+        "types": ["lodash"]
     },
     "include": ["src/**/*.ts"]
 }

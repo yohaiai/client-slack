@@ -35,6 +35,7 @@
         "@ffmpeg-installer/ffmpeg": "^1.1.0",
         "@slack/events-api": "^3.0.1",
         "@slack/web-api": "^6.8.1",
+        "@types/lodash": "^4.17.14",
         "body-parser": "^1.20.2",
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
