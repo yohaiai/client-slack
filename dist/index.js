@@ -1349,6 +1349,8 @@ var SlackClient = class extends EventEmitter {
 
 // src/index.ts
 var SlackClientInterface = {
+  name: "slack",
+  config: {},
   start: async (runtime) => {
     const client = new SlackClient(runtime);
     await client.start();
