@@ -1,6 +1,8 @@
 import { SlackClient } from "./slack-client";
 
 export const SlackClientInterface = {
+    name: 'slack',
+    config: {},
     start: async (runtime: any) => {
         const client = new SlackClient(runtime);
         await client.start();
