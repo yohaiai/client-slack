@@ -1,5 +1,7 @@
 // src/index.ts
-import { elizaLogger as elizaLogger4 } from "@elizaos/core";
+import {
+  elizaLogger as elizaLogger4
+} from "@elizaos/core";
 import { WebClient as WebClient2 } from "@slack/web-api";
 import express from "express";
 import { EventEmitter } from "events";
@@ -117,13 +119,10 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 var MessageManager = class {
-  client;
-  runtime;
-  botUserId;
-  processedEvents = /* @__PURE__ */ new Set();
-  messageProcessingLock = /* @__PURE__ */ new Set();
-  processedMessages = /* @__PURE__ */ new Map();
   constructor(client, runtime, botUserId) {
+    this.processedEvents = /* @__PURE__ */ new Set();
+    this.messageProcessingLock = /* @__PURE__ */ new Set();
+    this.processedMessages = /* @__PURE__ */ new Map();
     console.log("\u{1F4F1} Initializing MessageManager...");
     this.client = client;
     this.runtime = runtime;
@@ -170,9 +169,10 @@ var MessageManager = class {
     return cleaned;
   }
   async _shouldRespond(message, state) {
+    var _a, _b, _c, _d;
     console.log("\n=== SHOULD_RESPOND PHASE ===");
     console.log("\u{1F50D} Step 1: Evaluating if should respond to message");
-    if (message.type === "app_mention" || message.text?.includes(`<@${this.botUserId}>`)) {
+    if (message.type === "app_mention" || ((_a = message.text) == null ? void 0 : _a.includes(`<@${this.botUserId}>`))) {
       console.log("\u2705 Direct mention detected - will respond");
       return true;
     }
@@ -180,14 +180,14 @@ var MessageManager = class {
       console.log("\u2705 Direct message detected - will respond");
       return true;
     }
-    if (message.thread_ts && state.recentMessages?.includes(this.runtime.agentId)) {
+    if (message.thread_ts && ((_b = state.recentMessages) == null ? void 0 : _b.includes(this.runtime.agentId))) {
       console.log("\u2705 Active thread participant - will respond");
       return true;
     }
     console.log("\u{1F914} Step 2: Using LLM to decide response");
     const shouldRespondContext = composeContext({
       state,
-      template: this.runtime.character.templates?.slackShouldRespondTemplate || this.runtime.character.templates?.shouldRespondTemplate || slackShouldRespondTemplate
+      template: ((_c = this.runtime.character.templates) == null ? void 0 : _c.slackShouldRespondTemplate) || ((_d = this.runtime.character.templates) == null ? void 0 : _d.shouldRespondTemplate) || slackShouldRespondTemplate
     });
     console.log("\u{1F504} Step 3: Calling generateShouldRespond");
     const response = await generateShouldRespond({
@@ -199,6 +199,7 @@ var MessageManager = class {
     return response === "RESPOND";
   }
   async _generateResponse(memory, state, context) {
+    var _a, _b;
     console.log("\n=== GENERATE_RESPONSE PHASE ===");
     console.log("\u{1F50D} Step 1: Starting response generation");
     console.log("\u{1F504} Step 2: Calling LLM for response");
@@ -215,7 +216,7 @@ var MessageManager = class {
         source: "slack"
       };
     }
-    if (response.action === "CONTINUE" && !memory.content.text?.includes(`<@${this.botUserId}>`) && !state.recentMessages?.includes(memory.id)) {
+    if (response.action === "CONTINUE" && !((_a = memory.content.text) == null ? void 0 : _a.includes(`<@${this.botUserId}>`)) && !((_b = state.recentMessages) == null ? void 0 : _b.includes(memory.id))) {
       console.log(
         "\u26A0\uFE0F Step 4: Removing CONTINUE action - not a direct interaction"
       );
@@ -298,6 +299,7 @@ var MessageManager = class {
     }
   }
   async handleMessage(event) {
+    var _a;
     console.log("\n=== MESSAGE_HANDLING PHASE ===");
     console.log("\u{1F50D} Step 1: Received new message event");
     if (!event || !event.ts || !event.channel) {
@@ -397,14 +399,14 @@ var MessageManager = class {
           );
           const context = composeContext({
             state,
-            template: this.runtime.character.templates?.slackMessageHandlerTemplate || slackMessageHandlerTemplate
+            template: ((_a = this.runtime.character.templates) == null ? void 0 : _a.slackMessageHandlerTemplate) || slackMessageHandlerTemplate
           });
           const responseContent = await this._generateResponse(
             memory,
             state,
             context
           );
-          if (responseContent?.text) {
+          if (responseContent == null ? void 0 : responseContent.text) {
             console.log("\u{1F4E4} Step 11: Preparing to send response");
             const callback = async (content2, attachments) => {
               try {
@@ -651,6 +653,9 @@ var quotelessJson = (obj) => {
   return json.replace(/"([^"]+)":/g, "$1:");
 };
 var ZodError = class extends Error {
+  get errors() {
+    return this.issues;
+  }
   constructor(issues) {
     super();
     this.issues = [];
@@ -668,9 +673,6 @@ var ZodError = class extends Error {
     }
     this.name = "ZodError";
     this.issues = issues;
-  }
-  get errors() {
-    return this.issues;
   }
   format(_mapper) {
     const mapper = _mapper || function(issue) {
@@ -882,8 +884,11 @@ function addIssueToContext(ctx, issueData) {
     path: ctx.path,
     errorMaps: [
       ctx.common.contextualErrorMap,
+      // contextual error map is first priority
       ctx.schemaErrorMap,
+      // then schema-bound map if available
       overrideMap,
+      // then global override map
       overrideMap === errorMap ? void 0 : errorMap
       // then global default map
     ].filter((x) => !!x)
@@ -1039,34 +1044,6 @@ function processCreateParams(params) {
   return { errorMap: customMap, description };
 }
 var ZodType = class {
-  constructor(def) {
-    this.spa = this.safeParseAsync;
-    this._def = def;
-    this.parse = this.parse.bind(this);
-    this.safeParse = this.safeParse.bind(this);
-    this.parseAsync = this.parseAsync.bind(this);
-    this.safeParseAsync = this.safeParseAsync.bind(this);
-    this.spa = this.spa.bind(this);
-    this.refine = this.refine.bind(this);
-    this.refinement = this.refinement.bind(this);
-    this.superRefine = this.superRefine.bind(this);
-    this.optional = this.optional.bind(this);
-    this.nullable = this.nullable.bind(this);
-    this.nullish = this.nullish.bind(this);
-    this.array = this.array.bind(this);
-    this.promise = this.promise.bind(this);
-    this.or = this.or.bind(this);
-    this.and = this.and.bind(this);
-    this.transform = this.transform.bind(this);
-    this.brand = this.brand.bind(this);
-    this.default = this.default.bind(this);
-    this.catch = this.catch.bind(this);
-    this.describe = this.describe.bind(this);
-    this.pipe = this.pipe.bind(this);
-    this.readonly = this.readonly.bind(this);
-    this.isNullable = this.isNullable.bind(this);
-    this.isOptional = this.isOptional.bind(this);
-  }
   get description() {
     return this._def.description;
   }
@@ -1129,6 +1106,43 @@ var ZodType = class {
     };
     const result = this._parseSync({ data, path: ctx.path, parent: ctx });
     return handleResult(ctx, result);
+  }
+  "~validate"(data) {
+    var _a, _b;
+    const ctx = {
+      common: {
+        issues: [],
+        async: !!this["~standard"].async
+      },
+      path: [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data,
+      parsedType: getParsedType(data)
+    };
+    if (!this["~standard"].async) {
+      try {
+        const result = this._parseSync({ data, path: [], parent: ctx });
+        return isValid(result) ? {
+          value: result.value
+        } : {
+          issues: ctx.common.issues
+        };
+      } catch (err) {
+        if ((_b = (_a = err === null || err === void 0 ? void 0 : err.message) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === null || _b === void 0 ? void 0 : _b.includes("encountered")) {
+          this["~standard"].async = true;
+        }
+        ctx.common = {
+          issues: [],
+          async: true
+        };
+      }
+    }
+    return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
+      value: result.value
+    } : {
+      issues: ctx.common.issues
+    });
   }
   async parseAsync(data, params) {
     const result = await this.safeParseAsync(data, params);
@@ -1207,6 +1221,39 @@ var ZodType = class {
   superRefine(refinement) {
     return this._refinement(refinement);
   }
+  constructor(def) {
+    this.spa = this.safeParseAsync;
+    this._def = def;
+    this.parse = this.parse.bind(this);
+    this.safeParse = this.safeParse.bind(this);
+    this.parseAsync = this.parseAsync.bind(this);
+    this.safeParseAsync = this.safeParseAsync.bind(this);
+    this.spa = this.spa.bind(this);
+    this.refine = this.refine.bind(this);
+    this.refinement = this.refinement.bind(this);
+    this.superRefine = this.superRefine.bind(this);
+    this.optional = this.optional.bind(this);
+    this.nullable = this.nullable.bind(this);
+    this.nullish = this.nullish.bind(this);
+    this.array = this.array.bind(this);
+    this.promise = this.promise.bind(this);
+    this.or = this.or.bind(this);
+    this.and = this.and.bind(this);
+    this.transform = this.transform.bind(this);
+    this.brand = this.brand.bind(this);
+    this.default = this.default.bind(this);
+    this.catch = this.catch.bind(this);
+    this.describe = this.describe.bind(this);
+    this.pipe = this.pipe.bind(this);
+    this.readonly = this.readonly.bind(this);
+    this.isNullable = this.isNullable.bind(this);
+    this.isOptional = this.isOptional.bind(this);
+    this["~standard"] = {
+      version: 1,
+      vendor: "zod",
+      validate: (data) => this["~validate"](data)
+    };
+  }
   optional() {
     return ZodOptional.create(this, this._def);
   }
@@ -1217,7 +1264,7 @@ var ZodType = class {
     return this.nullable().optional();
   }
   array() {
-    return ZodArray.create(this, this._def);
+    return ZodArray.create(this);
   }
   promise() {
     return ZodPromise.create(this, this._def);
@@ -1283,16 +1330,20 @@ var ZodType = class {
 };
 var cuidRegex = /^c[^\s-]{8,}$/i;
 var cuid2Regex = /^[0-9a-z]+$/;
-var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/;
+var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
 var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
 var nanoidRegex = /^[a-z0-9_-]{21}$/i;
+var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
 var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
 var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
 var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
 var emojiRegex;
 var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
-var ipv6Regex = /^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/;
+var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
+var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
 var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
 var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
 var dateRegex = new RegExp(`^${dateRegexSource}$`);
 function timeRegexSource(args) {
@@ -1321,6 +1372,33 @@ function isValidIP(ip, version) {
     return true;
   }
   if ((version === "v6" || !version) && ipv6Regex.test(ip)) {
+    return true;
+  }
+  return false;
+}
+function isValidJWT(jwt, alg) {
+  if (!jwtRegex.test(jwt))
+    return false;
+  try {
+    const [header] = jwt.split(".");
+    const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
+    const decoded = JSON.parse(atob(base64));
+    if (typeof decoded !== "object" || decoded === null)
+      return false;
+    if (!decoded.typ || !decoded.alg)
+      return false;
+    if (alg && decoded.alg !== alg)
+      return false;
+    return true;
+  } catch (_a) {
+    return false;
+  }
+}
+function isValidCidr(ip, version) {
+  if ((version === "v4" || !version) && ipv4CidrRegex.test(ip)) {
+    return true;
+  }
+  if ((version === "v6" || !version) && ipv6CidrRegex.test(ip)) {
     return true;
   }
   return false;
@@ -1581,11 +1659,41 @@ var ZodString = class extends ZodType {
           });
           status.dirty();
         }
+      } else if (check.kind === "jwt") {
+        if (!isValidJWT(input.data, check.alg)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "jwt",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
+      } else if (check.kind === "cidr") {
+        if (!isValidCidr(input.data, check.version)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "cidr",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
       } else if (check.kind === "base64") {
         if (!base64Regex.test(input.data)) {
           ctx = this._getOrReturnCtx(input, ctx);
           addIssueToContext(ctx, {
             validation: "base64",
+            code: ZodIssueCode.invalid_string,
+            message: check.message
+          });
+          status.dirty();
+        }
+      } else if (check.kind === "base64url") {
+        if (!base64urlRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "base64url",
             code: ZodIssueCode.invalid_string,
             message: check.message
           });
@@ -1637,8 +1745,20 @@ var ZodString = class extends ZodType {
   base64(message) {
     return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
   }
+  base64url(message) {
+    return this._addCheck({
+      kind: "base64url",
+      ...errorUtil.errToObj(message)
+    });
+  }
+  jwt(options) {
+    return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options) });
+  }
   ip(options) {
     return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options) });
+  }
+  cidr(options) {
+    return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
   }
   datetime(options) {
     var _a, _b;
@@ -1730,8 +1850,7 @@ var ZodString = class extends ZodType {
     });
   }
   /**
-   * @deprecated Use z.string().min(1) instead.
-   * @see {@link ZodString.min}
+   * Equivalent to `.min(1)`
    */
   nonempty(message) {
     return this.min(1, errorUtil.errToObj(message));
@@ -1793,8 +1912,14 @@ var ZodString = class extends ZodType {
   get isIP() {
     return !!this._def.checks.find((ch) => ch.kind === "ip");
   }
+  get isCIDR() {
+    return !!this._def.checks.find((ch) => ch.kind === "cidr");
+  }
   get isBase64() {
     return !!this._def.checks.find((ch) => ch.kind === "base64");
+  }
+  get isBase64url() {
+    return !!this._def.checks.find((ch) => ch.kind === "base64url");
   }
   get minLength() {
     let min = null;
@@ -2073,17 +2198,15 @@ var ZodBigInt = class extends ZodType {
   }
   _parse(input) {
     if (this._def.coerce) {
-      input.data = BigInt(input.data);
+      try {
+        input.data = BigInt(input.data);
+      } catch (_a) {
+        return this._getInvalidInput(input);
+      }
     }
     const parsedType = this._getType(input);
     if (parsedType !== ZodParsedType.bigint) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.bigint,
-        received: ctx2.parsedType
-      });
-      return INVALID;
+      return this._getInvalidInput(input);
     }
     let ctx = void 0;
     const status = new ParseStatus();
@@ -2129,6 +2252,15 @@ var ZodBigInt = class extends ZodType {
       }
     }
     return { status: status.value, value: input.data };
+  }
+  _getInvalidInput(input) {
+    const ctx = this._getOrReturnCtx(input);
+    addIssueToContext(ctx, {
+      code: ZodIssueCode.invalid_type,
+      expected: ZodParsedType.bigint,
+      received: ctx.parsedType
+    });
+    return INVALID;
   }
   gte(value, message) {
     return this.setLimit("min", value, true, errorUtil.toString(message));
@@ -4507,7 +4639,7 @@ var getAttachmentIds = async (runtime, message, state) => {
       modelClass: ModelClass2.SMALL
     });
     const parsedResponse = parseJSONObjectFromText(response);
-    if (parsedResponse?.objective && parsedResponse?.attachmentIds) {
+    if ((parsedResponse == null ? void 0 : parsedResponse.objective) && (parsedResponse == null ? void 0 : parsedResponse.attachmentIds)) {
       return parsedResponse;
     }
   }
@@ -4567,6 +4699,7 @@ var summarizeAction = {
     );
   },
   handler: async (runtime, message, state, options, callback) => {
+    var _a, _b;
     const currentState = state ?? await runtime.composeState(message);
     const callbackData = {
       text: "",
@@ -4630,7 +4763,7 @@ ${attachment.text}`;
       return callbackData;
     }
     callbackData.text = currentSummary.trim();
-    if (callbackData.text && (currentSummary.trim()?.split("\n").length < 4 || currentSummary.trim()?.split(" ").length < 100)) {
+    if (callbackData.text && (((_a = currentSummary.trim()) == null ? void 0 : _a.split("\n").length) < 4 || ((_b = currentSummary.trim()) == null ? void 0 : _b.split(" ").length) < 100)) {
       callbackData.text = `Here is the summary:
 \`\`\`md
 ${currentSummary.trim()}
@@ -4749,7 +4882,7 @@ var getDateRange = async (runtime, message, state) => {
       modelClass: ModelClass3.SMALL
     });
     const parsedResponse = parseJSONObjectFromText2(response);
-    if (parsedResponse?.objective && parsedResponse?.start && parsedResponse?.end) {
+    if ((parsedResponse == null ? void 0 : parsedResponse.objective) && (parsedResponse == null ? void 0 : parsedResponse.start) && (parsedResponse == null ? void 0 : parsedResponse.end)) {
       const parseTimeString = (timeStr) => {
         const match = timeStr.match(
           /^(\d+)\s+(second|minute|hour|day)s?\s+ago$/i
@@ -4879,9 +5012,10 @@ var summarizeAction2 = {
     });
     const actorMap = new Map(actors.map((actor) => [actor.id, actor]));
     const formattedMemories = memories.map((memory) => {
+      var _a;
       const actor = actorMap.get(memory.userId);
-      const userName = actor?.name || actor?.username || "Unknown User";
-      const attachments = memory.content.attachments?.map((attachment) => {
+      const userName = (actor == null ? void 0 : actor.name) || (actor == null ? void 0 : actor.username) || "Unknown User";
+      const attachments = (_a = memory.content.attachments) == null ? void 0 : _a.map((attachment) => {
         if (!attachment)
           return "";
         return `---
@@ -4937,7 +5071,7 @@ ${attachments || ""}`;
     };
     try {
       const requestingUser = actorMap.get(message.userId);
-      const userName = requestingUser?.name || requestingUser?.username || "Unknown User";
+      const userName = (requestingUser == null ? void 0 : requestingUser.name) || (requestingUser == null ? void 0 : requestingUser.username) || "Unknown User";
       const summaryContent = `Summary of conversation from ${formatDate(start)} to ${formatDate(end)}
 
 Here is a detailed summary of the conversation between ${userName} and ${runtime.character.name}:
@@ -4954,7 +5088,7 @@ ${currentSummary.trim()}`;
           const slackService = runtime.getService(
             SLACK_SERVICE_TYPE
           );
-          if (!slackService?.client) {
+          if (!(slackService == null ? void 0 : slackService.client)) {
             elizaLogger3.error(
               "Slack service not found or not properly initialized"
             );
@@ -5038,12 +5172,12 @@ var summarize_conversation_default = summarizeAction2;
 // src/providers/channelState.ts
 var channelStateProvider = {
   get: async (runtime, message, state) => {
-    const slackEvent = state?.slackEvent;
+    const slackEvent = state == null ? void 0 : state.slackEvent;
     if (!slackEvent) {
       return "";
     }
-    const agentName = state?.agentName || "The agent";
-    const senderName = state?.senderName || "someone";
+    const agentName = (state == null ? void 0 : state.agentName) || "The agent";
+    const senderName = (state == null ? void 0 : state.senderName) || "someone";
     const channelId = slackEvent.channel;
     const channelType = slackEvent.channel_type;
     if (channelType === "im") {
@@ -5064,7 +5198,6 @@ var channelStateProvider = {
 import { Service, ServiceType as ServiceType2 } from "@elizaos/core";
 import { WebClient } from "@slack/web-api";
 var SlackService = class extends Service {
-  client;
   static get serviceType() {
     return ServiceType2.SLACK;
   }
@@ -5082,13 +5215,6 @@ var SlackService = class extends Service {
 
 // src/index.ts
 var SlackClient = class extends EventEmitter {
-  client;
-  runtime;
-  server;
-  messageManager;
-  botUserId;
-  character;
-  signingSecret;
   constructor(runtime) {
     super();
     elizaLogger4.log("\u{1F680} Initializing SlackClient...");
@@ -5119,11 +5245,12 @@ var SlackClient = class extends EventEmitter {
     });
   }
   async handleEvent(event) {
+    var _a;
     elizaLogger4.debug("\u{1F3AF} [EVENT] Processing event:", {
       type: event.type,
       user: event.user,
       channel: event.channel,
-      text: event.text?.slice(0, 100)
+      text: (_a = event.text) == null ? void 0 : _a.slice(0, 100)
     });
     try {
       if (event.type === "message" || event.type === "app_mention") {
@@ -5180,6 +5307,7 @@ var SlackClient = class extends EventEmitter {
     }
   }
   async start() {
+    var _a, _b, _c, _d, _e, _f;
     try {
       elizaLogger4.log("Starting Slack client...");
       const config = await validateSlackConfig(this.runtime);
@@ -5202,11 +5330,11 @@ var SlackClient = class extends EventEmitter {
           user: this.botUserId
         });
         elizaLogger4.debug("\u{1F464} [BOT] Bot user details:", {
-          name: botInfo.user?.name,
-          real_name: botInfo.user?.real_name,
-          is_bot: botInfo.user?.is_bot,
-          is_app_user: botInfo.user?.is_app_user,
-          status: botInfo.user?.profile?.status_text
+          name: (_a = botInfo.user) == null ? void 0 : _a.name,
+          real_name: (_b = botInfo.user) == null ? void 0 : _b.real_name,
+          is_bot: (_c = botInfo.user) == null ? void 0 : _c.is_bot,
+          is_app_user: (_d = botInfo.user) == null ? void 0 : _d.is_app_user,
+          status: (_f = (_e = botInfo.user) == null ? void 0 : _e.profile) == null ? void 0 : _f.status_text
         });
       } catch (error) {
         elizaLogger4.error(
@@ -5237,24 +5365,25 @@ var SlackClient = class extends EventEmitter {
       this.server.post(
         "/slack/events",
         async (req, res) => {
+          var _a2, _b2, _c2, _d2, _e2, _f2;
           try {
             elizaLogger4.debug(
               "\u{1F4E5} [REQUEST] Incoming Slack event:",
               {
-                type: req.body?.type,
-                event: req.body?.event?.type,
-                challenge: req.body?.challenge,
+                type: (_a2 = req.body) == null ? void 0 : _a2.type,
+                event: (_c2 = (_b2 = req.body) == null ? void 0 : _b2.event) == null ? void 0 : _c2.type,
+                challenge: (_d2 = req.body) == null ? void 0 : _d2.challenge,
                 raw: JSON.stringify(req.body, null, 2)
               }
             );
-            if (req.body?.type === "url_verification") {
+            if (((_e2 = req.body) == null ? void 0 : _e2.type) === "url_verification") {
               elizaLogger4.debug(
                 "\u{1F511} [VERIFICATION] Challenge received:",
                 req.body.challenge
               );
               return res.send(req.body.challenge);
             }
-            if (req.body?.event) {
+            if ((_f2 = req.body) == null ? void 0 : _f2.event) {
               elizaLogger4.debug("\u{1F3AF} [EVENT] Processing event:", {
                 type: req.body.event.type,
                 user: req.body.event.user,
@@ -5283,13 +5412,14 @@ var SlackClient = class extends EventEmitter {
       this.server.post(
         "/slack/interactions",
         async (req, res) => {
+          var _a2, _b2, _c2;
           try {
             elizaLogger4.debug(
               "\u{1F504} [INTERACTION] Incoming interaction:",
               {
-                type: req.body?.type,
-                action: req.body?.action,
-                callback_id: req.body?.callback_id,
+                type: (_a2 = req.body) == null ? void 0 : _a2.type,
+                action: (_b2 = req.body) == null ? void 0 : _b2.action,
+                callback_id: (_c2 = req.body) == null ? void 0 : _c2.callback_id,
                 raw: JSON.stringify(req.body, null, 2)
               }
             );
@@ -5353,14 +5483,15 @@ var SlackClientInterface = {
     const client = new SlackClient(runtime);
     await client.start();
     return client;
-  },
-  stop: async (_runtime) => {
-    elizaLogger4.warn("Slack client stopping...");
   }
 };
-var src_default = SlackClientInterface;
+var slackPlugin = {
+  name: "slack",
+  description: "Slack client plugin",
+  clients: [SlackClientInterface]
+};
+var src_default = slackPlugin;
 export {
-  SlackClient,
-  SlackClientInterface,
   src_default as default
 };
+//# sourceMappingURL=index.js.map

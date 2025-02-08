@@ -1,20 +1,5 @@
-import { IAgentRuntime, Client } from '@elizaos/core';
-import { EventEmitter } from 'events';
+import { Plugin } from '@elizaos/core';
 
-declare class SlackClient extends EventEmitter {
-    private client;
-    private runtime;
-    private server;
-    private messageManager;
-    private botUserId;
-    private character;
-    private signingSecret;
-    constructor(runtime: IAgentRuntime);
-    private handleEvent;
-    private verifyPermissions;
-    start(): Promise<void>;
-    stop(): Promise<void>;
-}
-declare const SlackClientInterface: Client;
+declare const slackPlugin: Plugin;
 
-export { SlackClient, SlackClientInterface, SlackClientInterface as default };
+export { slackPlugin as default };
