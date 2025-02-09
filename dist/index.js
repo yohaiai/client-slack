@@ -1,4 +1,4 @@
-// src/index.ts
+// src/client.ts
 import {
   elizaLogger as elizaLogger4
 } from "@elizaos/core";
@@ -5213,7 +5213,7 @@ var SlackService = class extends Service {
   }
 };
 
-// src/index.ts
+// src/client.ts
 var SlackClient = class extends EventEmitter {
   constructor(runtime) {
     super();
@@ -5485,6 +5485,8 @@ var SlackClientInterface = {
     return client;
   }
 };
+
+// src/index.ts
 var slackPlugin = {
   name: "slack",
   description: "Slack client plugin",

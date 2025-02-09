@@ -1,5 +1,7 @@
-import { Plugin } from '@elizaos/core';
-
-declare const slackPlugin: Plugin;
+declare const slackPlugin: {
+    name: string;
+    description: string;
+    clients: ElizaClient[];
+};
 
 export { slackPlugin as default };
