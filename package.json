@@ -54,5 +54,45 @@
     },
     "publishConfig": {
         "access": "public"
+    },
+    "agentConfig": {
+        "pluginType": "elizaos:client:1.0.0",
+        "pluginParameters": {
+            "SLACK_APP_ID": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack application ID is required"
+            },
+            "SLACK_CLIENT_ID": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack client ID is required"
+            },
+            "SLACK_CLIENT_SECRET": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack client secret is required"
+            },
+            "SLACK_SIGNING_SECRET": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack signing secret is required"
+            },
+            "SLACK_VERIFICATION_TOKEN": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack verification token is required"
+            },
+            "SLACK_BOT_TOKEN": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack bot token is required"
+            },
+            "SLACK_SERVER_PORT": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Slack server port is optional"
+            }
+        }
     }
 }
